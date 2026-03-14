@@ -1,0 +1,8 @@
+.env echo .env.local echo node_modules/ echo .DS_Store
+.env echo .env.local echo node_modules/ echo .DS_Store
+.env echo .env.local echo node_modules/ echo .DS_Store
+.env echo .env.local echo node_modules/ echo .DS_Store
+.env
+.env.local
+node_modules/
+.DS_Store
