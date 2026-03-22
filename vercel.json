@@ -1,0 +1,8 @@
+{
+    "crons": [
+        {
+            "path": "/api/sync/wave",
+            "schedule": "*/20 * * * *"
+        }
+    ]
+}
