@@ -42,14 +42,14 @@ export async function GET(request: Request) {
             });
 
             folders.push({
-                id: subfolder.id,
-                name: subfolder.name,
+                id: subfolder.id || '',
+                name: subfolder.name || '',
                 files: filesData.files || [],
             });
         }
 
         // Sort folders by name
-        folders.sort((a, b) => a.name.localeCompare(b.name));
+        folders.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
         return NextResponse.json({
             success: true,
