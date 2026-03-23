@@ -9,8 +9,7 @@ async function getDriveClient() {
         keyFile: SERVICE_ACCOUNT_PATH,
         scopes: ['https://www.googleapis.com/auth/drive'],
     });
-    const authClient = await auth.getClient();
-    return google.drive({ version: 'v3', auth: authClient });
+    return google.drive({ version: 'v3', auth });
 }
 
 export async function GET(request: Request) {
