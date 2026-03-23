@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { fetchWaveCustomers, fetchWaveEstimates, fetchWaveInvoices } from '@/lib/wave';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { provisionFolders } from '@/lib/provisioning';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,8 +31,21 @@ export async function GET(request: Request) {
         console.log('Syncing Invoices...');
         await syncInvoices();
 
-        console.log('Wave sync completed successfully.');
-        return NextResponse.json({ success: true, message: 'Sync completed' });
+        // 4. Provision Folders
+        console.log('Provisioning Folders...');
+        const { data: testClients } = await supabase.from('clients').select('id');
+        const diagnostic = {
+            clientsInDb: testClients?.length || 0,
+            clientsToProvision: (await supabase.from('clients').select('id').is('google_folder_id', null)).data?.length || 0
+        };
+        await provisionFolders();
+
+        console.log('Wave sync and provisioning completed successfully.');
+        return NextResponse.json({
+            success: true,
+            message: 'Sync completed',
+            diagnostic
+        });
     } catch (error: any) {
         console.error('Wave sync failed:', error);
         await sendTelegramNotification({

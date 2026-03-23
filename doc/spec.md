@@ -164,10 +164,6 @@ Photos/
 
 Client Uploads/
 
-_Internal/                        ← permission inheritance broken
-
-text
-
 ### Provisioning Logic
 
 Triggered after every Wave sync for records where google_folder_id IS NULL.
@@ -176,13 +172,9 @@ Triggered after every Wave sync for records where google_folder_id IS NULL.
 
    share with client email, write Drive folder ID to clients.google_folder_id.
 
-2. Create project subfolder with all seven standard subfolders.
+2. Create project subfolder with all standard subfolders.
 
-3. Create _Internal subfolder and explicitly break permission inheritance.
-
-   This folder is never shared with the client.
-
-4. Write the project folder Drive ID to estimates.google_folder_id or
+3. Write the project folder Drive ID to estimates.google_folder_id or
 
    invoices.google_folder_id.
 
@@ -191,8 +183,6 @@ Triggered after every Wave sync for records where google_folder_id IS NULL.
 - Client parent folder: shared with client email on creation
 
 - Project subfolders: inherit client folder permissions
-
-- _Internal: inheritance broken, visible to admin only
 
 ---
 
@@ -220,7 +210,7 @@ Download links for all files.
 
 Upload interface writing to Client Uploads subfolder.
 
-Does not show _Internal folder or its contents.
+Download links and upload interface only; no admin-only content shown.
 
 ### /admin
 

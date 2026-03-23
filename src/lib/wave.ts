@@ -1,7 +1,7 @@
 import { request, gql } from 'graphql-request';
 
 const WAVE_API_URL = 'https://gql.waveapps.com/graphql/public';
-const WAVE_API_TOKEN = process.env.WAVE_API_TOKEN!;
+const WAVE_API_TOKEN = process.env.WAVE_API_KEY!;
 const WAVE_BUSINESS_ID = process.env.WAVE_BUSINESS_ID!;
 
 if (!WAVE_API_TOKEN || !WAVE_BUSINESS_ID) {

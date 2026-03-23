@@ -113,12 +113,11 @@ Wave sync to overwrite them would destroy provisioning state.
 
 ## Private Project Folders
 
-**Decision**: Break Drive permission inheritance on _Internal subfolder
+**Decision**: Removed - all folders are now client-accessible
 **Date**: March 2026
-**Rationale**: Clients must not see internal notes or draft documents.
-Breaking inheritance at the subfolder level is the simplest and most
-reliable approach in Google Drive. Alternatively hiding the folder via
-API would require extra logic on every file read.
+**Rationale**: Simplified folder structure with no private subfolders.
+All project files are accessible to clients through the standard
+subfolder structure.
 
 ---
 

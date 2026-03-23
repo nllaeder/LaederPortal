@@ -72,10 +72,9 @@ These were discovered through testing. Do not attempt to "fix" them.
   has filtered it correctly.
 - Do not add client-side data filtering as a substitute for RLS.
 
-### Google Drive - Private Folders
-- Every project has an _Internal subfolder.
-- _Internal MUST have its permission inheritance explicitly broken.
-- _Internal is NEVER shared with clients under any circumstances.
+### Google Drive - Folder Permissions
+- Project subfolders inherit permissions from the client parent folder.
+- Client parent folders are shared with the client email on creation.
 
 ---
 
@@ -120,14 +119,12 @@ LaederPortal/
       Reports/
       Photos/
       Client Uploads/
-      _Internal/    <-- permission inheritance broken, never shared
 
 When provisioning:
 1. Check if client parent folder exists via client.google_folder_id.
 2. If not, create it, share with client email, write ID to Supabase.
 3. Create project subfolder with all standard subfolders.
-4. Create _Internal, break inheritance, write project folder ID to
-   the estimate or invoice record in Supabase.
+4. Write project folder ID to the estimate or invoice record in Supabase.
 
 ---
 
