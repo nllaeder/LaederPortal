@@ -49,13 +49,21 @@ export async function middleware(req: NextRequest) {
     error: error?.message || 'none'
   });
 
-  // Protect dashboard and admin routes
-  if (req.nextUrl.pathname.startsWith('/dashboard') || req.nextUrl.pathname.startsWith('/admin')) {
+  // Protect admin routes only (temporarily disable dashboard protection)
+  if (req.nextUrl.pathname.startsWith('/admin')) {
     if (!session) {
       console.log('No session found, redirecting to login');
       return NextResponse.redirect(new URL('/login', req.url));
     }
   }
+
+  // Dashboard protection - temporarily commented out to debug
+  // if (req.nextUrl.pathname.startsWith('/dashboard')) {
+  //   if (!session) {
+  //     console.log('No session found, redirecting to login');
+  //     return NextResponse.redirect(new URL('/login', req.url));
+  //   }
+  // }
 
   // Admin-only routes
   if (req.nextUrl.pathname.startsWith('/admin')) {
