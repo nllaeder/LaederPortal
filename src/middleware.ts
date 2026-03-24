@@ -40,11 +40,19 @@ export async function middleware(req: NextRequest) {
   );
 
   // Refresh session if expired
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session }, error } = await supabase.auth.getSession();
+
+  console.log('Middleware session check:', {
+    path: req.nextUrl.pathname,
+    hasSession: !!session,
+    userEmail: session?.user?.email || 'none',
+    error: error?.message || 'none'
+  });
 
   // Protect dashboard and admin routes
   if (req.nextUrl.pathname.startsWith('/dashboard') || req.nextUrl.pathname.startsWith('/admin')) {
     if (!session) {
+      console.log('No session found, redirecting to login');
       return NextResponse.redirect(new URL('/login', req.url));
     }
   }
