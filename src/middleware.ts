@@ -49,21 +49,24 @@ export async function middleware(req: NextRequest) {
     error: error?.message || 'none'
   });
 
-  // Protect admin routes only (temporarily disable dashboard protection)
-  if (req.nextUrl.pathname.startsWith('/admin')) {
+  // Protect dashboard and admin routes
+  if (req.nextUrl.pathname.startsWith('/dashboard') || req.nextUrl.pathname.startsWith('/admin')) {
+    // Check if this might be an OAuth callback by looking for auth-related fragments in the referrer
+    const referrer = req.headers.get('referer');
+    const isLikelyOAuthCallback = referrer?.includes('/login') &&
+      (req.headers.get('sec-fetch-dest') === 'document' || req.headers.get('cache-control')?.includes('no-cache'));
+
     if (!session) {
-      console.log('No session found, redirecting to login');
-      return NextResponse.redirect(new URL('/login', req.url));
+      if (isLikelyOAuthCallback) {
+        console.log('Likely OAuth callback, allowing dashboard access temporarily');
+        // For OAuth callbacks, let the client-side handle the redirect
+        return response;
+      } else {
+        console.log('No session found, redirecting to login');
+        return NextResponse.redirect(new URL('/login', req.url));
+      }
     }
   }
-
-  // Dashboard protection - temporarily commented out to debug
-  // if (req.nextUrl.pathname.startsWith('/dashboard')) {
-  //   if (!session) {
-  //     console.log('No session found, redirecting to login');
-  //     return NextResponse.redirect(new URL('/login', req.url));
-  //   }
-  // }
 
   // Admin-only routes
   if (req.nextUrl.pathname.startsWith('/admin')) {
