@@ -61,7 +61,7 @@ export default function DashboardPage() {
             date: est.estimate_date || '',
             amount: est.total || 0,
             currency_code: est.currency_code || 'CAD',
-            client_name: est.clients?.name || 'Unknown Client',
+            client_name: (est.clients as any)?.name || 'Unknown Client',
           })),
           ...(invoices || []).map(inv => ({
             id: inv.id,
@@ -72,7 +72,7 @@ export default function DashboardPage() {
             status: inv.status,
             amount: inv.total || 0,
             currency_code: inv.currency_code || 'CAD',
-            client_name: inv.clients?.name || 'Unknown Client',
+            client_name: (inv.clients as any)?.name || 'Unknown Client',
           })),
         ];
 
