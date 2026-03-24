@@ -113,7 +113,7 @@ async function syncEstimates() {
             wave_id: node.id,
             wave_client_id: node.customer?.id,
             estimate_number: node.estimateNumber,
-            title: node.title,
+            title: node.reference || node.title, // Use reference (Ref ID) if available, fallback to title
             estimate_date: node.estimateDate,
             due_date: node.dueDate,
             amount_due: parseAmount(node.amountDue?.value),
@@ -157,7 +157,7 @@ async function syncInvoices() {
             wave_id: node.id,
             wave_client_id: node.customer?.id,
             invoice_number: node.invoiceNumber,
-            title: node.title,
+            title: node.reference || node.title, // Use reference (Ref ID) if available, fallback to title
             status: node.status,
             invoice_date: node.invoiceDate,
             due_date: node.dueDate,

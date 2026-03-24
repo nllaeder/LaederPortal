@@ -73,6 +73,7 @@ const ESTIMATES_QUERY = gql`
             id
             estimateNumber
             title
+            reference
             estimateDate
             dueDate
             customer { id name }
@@ -108,6 +109,7 @@ const INVOICES_QUERY = gql`
             id
             invoiceNumber
             title
+            reference
             status
             invoiceDate
             dueDate
