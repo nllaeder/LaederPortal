@@ -17,8 +17,17 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      console.log('User authenticated, redirecting to dashboard');
+      console.log('User authenticated, redirecting to dashboard via router.push');
+      console.log('Current pathname:', window.location.pathname);
       router.push('/dashboard');
+
+      // Fallback: force navigation if router.push doesn't work
+      const fallbackTimer = setTimeout(() => {
+        console.log('Router.push fallback - using window.location');
+        window.location.href = '/dashboard';
+      }, 1000);
+
+      return () => clearTimeout(fallbackTimer);
     }
   }, [user, router]);
 
