@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const { signInWithEmail, signInWithGoogle, user } = useAuth();
@@ -16,9 +17,30 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
+      console.log('User authenticated, redirecting to dashboard');
       router.push('/dashboard');
     }
   }, [user, router]);
+
+  // Handle OAuth callback redirect
+  useEffect(() => {
+    // Check for auth tokens in URL (OAuth callback)
+    const hashFragment = window.location.hash;
+    if (hashFragment.includes('access_token') || hashFragment.includes('refresh_token')) {
+      console.log('OAuth callback detected, waiting for auth state...');
+      setOauthLoading(true);
+      // Give some time for the auth state to update
+      const timer = setTimeout(() => {
+        if (!user) {
+          console.log('Auth state not updated, refreshing page...');
+          window.location.reload();
+        }
+        setOauthLoading(false);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +102,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                disabled={loading}
+                disabled={loading || oauthLoading}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm disabled:bg-gray-100"
@@ -90,7 +112,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || oauthLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
             >
               {loading ? 'Sending...' : 'Send Magic Link'}
@@ -110,7 +132,7 @@ export default function LoginPage() {
           {/* Google OAuth Button */}
           <button
             onClick={handleGoogleLogin}
-            disabled={loading}
+            disabled={loading || oauthLoading}
             className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-100"
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -135,6 +157,12 @@ export default function LoginPage() {
           </button>
 
           {/* Messages */}
+          {oauthLoading && (
+            <div className="rounded-md bg-blue-50 p-4">
+              <div className="text-sm text-blue-700">Completing sign in...</div>
+            </div>
+          )}
+
           {message && (
             <div className="rounded-md bg-green-50 p-4">
               <div className="text-sm text-green-700">{message}</div>
