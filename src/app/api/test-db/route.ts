@@ -3,6 +3,13 @@ import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+interface ClientRow {
+    wave_id: string | null;
+    name: string | null;
+    google_folder_id: string | null;
+    is_archived: boolean | null;
+}
+
 export async function GET() {
     const report: any = {};
 
@@ -10,11 +17,12 @@ export async function GET() {
     if (error) {
         report.error = error.message;
     } else {
+        const clientData = data as ClientRow[];
         report.clients = {
-            total: data.length,
-            is_archived_count: data.filter(r => r.is_archived).length,
-            no_folder_and_not_archived: data.filter(r => !r.google_folder_id && !r.is_archived).length,
-            sample: data.slice(0, 5)
+            total: clientData.length,
+            is_archived_count: clientData.filter((r: ClientRow) => r.is_archived).length,
+            no_folder_and_not_archived: clientData.filter((r: ClientRow) => !r.google_folder_id && !r.is_archived).length,
+            sample: clientData.slice(0, 5)
         };
     }
 
