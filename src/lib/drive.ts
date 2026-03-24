@@ -12,8 +12,7 @@ async function getDriveClient() {
         keyFile: SERVICE_ACCOUNT_PATH,
         scopes: SCOPES,
     });
-    const authClient = await auth.getClient();
-    return google.drive({ version: 'v3', auth: authClient });
+    return google.drive({ version: 'v3', auth });
 }
 
 /**
