@@ -29,24 +29,31 @@ export default function DashboardPage() {
 
     async function fetchProjects() {
       try {
-        // Fetch estimates with client names
+        // Fetch all clients first
+        const { data: clients, error: clientsError } = await supabaseClient
+          .from('clients')
+          .select('wave_id, name');
+
+        if (clientsError) throw clientsError;
+
+        // Create a lookup map for client names
+        const clientMap = new Map();
+        clients?.forEach(client => {
+          clientMap.set(client.wave_id, client.name);
+        });
+
+        // Fetch estimates
         const { data: estimates, error: estimatesError } = await supabaseClient
           .from('estimates')
-          .select(`
-            id, title, estimate_number, estimate_date, total, currency_code,
-            clients!estimates_wave_client_id_fkey(name)
-          `)
+          .select('id, title, estimate_number, estimate_date, total, currency_code, wave_client_id')
           .order('estimate_date', { ascending: false });
 
         if (estimatesError) throw estimatesError;
 
-        // Fetch invoices with client names
+        // Fetch invoices
         const { data: invoices, error: invoicesError } = await supabaseClient
           .from('invoices')
-          .select(`
-            id, title, invoice_number, invoice_date, status, total, currency_code,
-            clients!invoices_wave_client_id_fkey(name)
-          `)
+          .select('id, title, invoice_number, invoice_date, status, total, currency_code, wave_client_id')
           .order('invoice_date', { ascending: false });
 
         if (invoicesError) throw invoicesError;
@@ -61,7 +68,7 @@ export default function DashboardPage() {
             date: est.estimate_date || '',
             amount: est.total || 0,
             currency_code: est.currency_code || 'CAD',
-            client_name: (est.clients as any)?.name || 'Unknown Client',
+            client_name: clientMap.get(est.wave_client_id) || 'Unknown Client',
           })),
           ...(invoices || []).map(inv => ({
             id: inv.id,
@@ -72,7 +79,7 @@ export default function DashboardPage() {
             status: inv.status,
             amount: inv.total || 0,
             currency_code: inv.currency_code || 'CAD',
-            client_name: (inv.clients as any)?.name || 'Unknown Client',
+            client_name: clientMap.get(inv.wave_client_id) || 'Unknown Client',
           })),
         ];
 
