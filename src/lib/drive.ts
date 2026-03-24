@@ -1,18 +1,32 @@
 import { google } from 'googleapis';
 import path from 'path';
 
-const SERVICE_ACCOUNT_PATH = path.join(process.cwd(), 'laederportal-service-account.json');
 const SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.metadata.readonly', 'https://www.googleapis.com/auth/drive.readonly', 'https://www.googleapis.com/auth/drive'];
 
 /**
  * Initializes the Google Drive client using the service account key.
  */
 async function getDriveClient() {
-    const auth = new google.auth.GoogleAuth({
-        keyFile: SERVICE_ACCOUNT_PATH,
-        scopes: SCOPES,
-    });
-    return google.drive({ version: 'v3', auth });
+    // Try environment variable first (for production)
+    const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+
+    if (serviceAccountKey) {
+        // Use service account from environment variable
+        const credentials = JSON.parse(serviceAccountKey);
+        const auth = new google.auth.GoogleAuth({
+            credentials,
+            scopes: SCOPES,
+        });
+        return google.drive({ version: 'v3', auth });
+    } else {
+        // Fallback to file (for local development)
+        const SERVICE_ACCOUNT_PATH = path.join(process.cwd(), 'laederportal-service-account.json');
+        const auth = new google.auth.GoogleAuth({
+            keyFile: SERVICE_ACCOUNT_PATH,
+            scopes: SCOPES,
+        });
+        return google.drive({ version: 'v3', auth });
+    }
 }
 
 /**
