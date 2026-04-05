@@ -27,6 +27,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get initial session
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session:', session?.user?.email || 'No session');
+      console.log('Auth change - session state:', {
+        hasSession: !!session,
+        userEmail: session?.user?.email || 'none'
+      });
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);

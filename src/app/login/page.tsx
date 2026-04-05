@@ -17,17 +17,27 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      console.log('User authenticated, redirecting to dashboard via router.push');
-      console.log('Current pathname:', window.location.pathname);
-      router.push('/dashboard');
+      console.log('User authenticated, syncing session and redirecting');
 
-      // Fallback: force navigation if router.push doesn't work
-      const fallbackTimer = setTimeout(() => {
-        console.log('Router.push fallback - using window.location');
-        window.location.href = '/dashboard';
-      }, 1000);
+      // Force a server-side session sync by making a request that will set cookies
+      fetch('/api/debug', {
+        method: 'GET',
+        credentials: 'include'
+      }).then(() => {
+        console.log('Session sync complete, redirecting to dashboard');
+        router.push('/dashboard');
 
-      return () => clearTimeout(fallbackTimer);
+        // Fallback: force navigation if router.push doesn't work
+        const fallbackTimer = setTimeout(() => {
+          console.log('Router.push fallback - using window.location');
+          window.location.href = '/dashboard';
+        }, 1000);
+
+        setTimeout(() => clearTimeout(fallbackTimer), 2000);
+      }).catch(() => {
+        // If sync fails, still try to redirect
+        router.push('/dashboard');
+      });
     }
   }, [user, router]);
 
@@ -35,21 +45,22 @@ export default function LoginPage() {
   useEffect(() => {
     // Check for auth tokens in URL (OAuth callback)
     const hashFragment = window.location.hash;
-    if (hashFragment.includes('access_token') || hashFragment.includes('refresh_token')) {
+    const searchParams = window.location.search;
+
+    if (hashFragment.includes('access_token') || hashFragment.includes('refresh_token') ||
+        searchParams.includes('access_token') || searchParams.includes('refresh_token')) {
       console.log('OAuth callback detected, waiting for auth state...');
       setOauthLoading(true);
-      // Give some time for the auth state to update
+
+      // Give some time for the auth state to update, then refresh page to sync server session
       const timer = setTimeout(() => {
-        if (!user) {
-          console.log('Auth state not updated, refreshing page...');
-          window.location.reload();
-        }
-        setOauthLoading(false);
-      }, 3000);
+        console.log('Auth state processing complete, refreshing to sync server session...');
+        window.location.reload();
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, []);
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
