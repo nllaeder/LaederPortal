@@ -49,8 +49,8 @@ export async function middleware(req: NextRequest) {
     error: error?.message || 'none'
   });
 
-  // Protect dashboard and admin routes
-  if (req.nextUrl.pathname.startsWith('/dashboard') || req.nextUrl.pathname.startsWith('/admin')) {
+  // Protect dashboard routes
+  if (req.nextUrl.pathname.startsWith('/dashboard')) {
     // Check if this might be an OAuth callback by looking for auth-related fragments in the referrer
     const referrer = req.headers.get('referer');
     const isLikelyOAuthCallback = referrer?.includes('/login') &&
@@ -68,6 +68,14 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Protect admin routes (separate handling)
+  if (req.nextUrl.pathname.startsWith('/admin')) {
+    if (!session) {
+      console.log('No session found for admin route, redirecting to login');
+      return NextResponse.redirect(new URL('/login', req.url));
+    }
+  }
+
   // Admin-only routes
   if (req.nextUrl.pathname.startsWith('/admin')) {
     const user = session?.user;
@@ -80,11 +88,10 @@ export async function middleware(req: NextRequest) {
       expectedEmail: 'nicholas@laederconsulting.com'
     });
 
-    // Temporarily disable dashboard protection to debug redirect loop
-    // if (!isAdmin) {
-    //   console.log('Access denied to admin route, redirecting to dashboard');
-    //   return NextResponse.redirect(new URL('/dashboard', req.url));
-    // }
+    if (!isAdmin) {
+      console.log('Access denied to admin route, redirecting to dashboard');
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
   }
 
   // Redirect authenticated users away from login
