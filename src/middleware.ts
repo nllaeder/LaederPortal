@@ -83,10 +83,17 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
-  // Redirect root to dashboard if authenticated, otherwise to login
+  // Redirect root to admin/dashboard if authenticated, otherwise to login
   if (req.nextUrl.pathname === '/') {
     if (session) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+      const user = session.user;
+      const isAdmin = user?.email === 'nicholas@laederconsulting.com';
+
+      if (isAdmin) {
+        return NextResponse.redirect(new URL('/admin', req.url));
+      } else {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
     } else {
       return NextResponse.redirect(new URL('/login', req.url));
     }
