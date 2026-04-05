@@ -17,50 +17,12 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      console.log('User authenticated, syncing session and redirecting');
-
-      // Force a server-side session sync by making a request that will set cookies
-      fetch('/api/debug', {
-        method: 'GET',
-        credentials: 'include'
-      }).then(() => {
-        console.log('Session sync complete, redirecting to dashboard');
-        router.push('/dashboard');
-
-        // Fallback: force navigation if router.push doesn't work
-        const fallbackTimer = setTimeout(() => {
-          console.log('Router.push fallback - using window.location');
-          window.location.href = '/dashboard';
-        }, 1000);
-
-        setTimeout(() => clearTimeout(fallbackTimer), 2000);
-      }).catch(() => {
-        // If sync fails, still try to redirect
-        router.push('/dashboard');
-      });
+      console.log('User authenticated, redirecting to dashboard');
+      router.push('/dashboard');
     }
   }, [user, router]);
 
-  // Handle OAuth callback redirect
-  useEffect(() => {
-    // Check for auth tokens in URL (OAuth callback)
-    const hashFragment = window.location.hash;
-    const searchParams = window.location.search;
-
-    if (hashFragment.includes('access_token') || hashFragment.includes('refresh_token') ||
-        searchParams.includes('access_token') || searchParams.includes('refresh_token')) {
-      console.log('OAuth callback detected, waiting for auth state...');
-      setOauthLoading(true);
-
-      // Give some time for the auth state to update, then refresh page to sync server session
-      const timer = setTimeout(() => {
-        console.log('Auth state processing complete, refreshing to sync server session...');
-        window.location.reload();
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, []);
+  // Handle OAuth callback redirect - removed infinite loop
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
