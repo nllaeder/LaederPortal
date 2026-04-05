@@ -73,7 +73,15 @@ export async function middleware(req: NextRequest) {
     const user = session?.user;
     const isAdmin = user?.email === 'nicholas@laederconsulting.com';
 
+    console.log('Admin check:', {
+      path: req.nextUrl.pathname,
+      userEmail: user?.email || 'none',
+      isAdmin,
+      expectedEmail: 'nicholas@laederconsulting.com'
+    });
+
     if (!isAdmin) {
+      console.log('Access denied to admin route, redirecting to dashboard');
       return NextResponse.redirect(new URL('/dashboard', req.url));
     }
   }
@@ -88,6 +96,13 @@ export async function middleware(req: NextRequest) {
     if (session) {
       const user = session.user;
       const isAdmin = user?.email === 'nicholas@laederconsulting.com';
+
+      console.log('Root path redirect:', {
+        userEmail: user?.email || 'none',
+        isAdmin,
+        expectedEmail: 'nicholas@laederconsulting.com',
+        redirectTo: isAdmin ? '/admin' : '/dashboard'
+      });
 
       if (isAdmin) {
         return NextResponse.redirect(new URL('/admin', req.url));
