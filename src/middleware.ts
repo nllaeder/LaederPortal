@@ -88,11 +88,10 @@ export async function middleware(req: NextRequest) {
       expectedEmail: 'nicholas@laederconsulting.com'
     });
 
-    // Temporarily disable admin check for debugging
-    // if (!isAdmin) {
-    //   console.log('Access denied to admin route, redirecting to dashboard');
-    //   return NextResponse.redirect(new URL('/dashboard', req.url));
-    // }
+    if (!isAdmin) {
+      console.log('Access denied to admin route, redirecting to dashboard');
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
   }
 
   // Redirect authenticated users away from login
