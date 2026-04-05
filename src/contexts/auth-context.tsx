@@ -21,16 +21,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const isAdmin = user?.user_metadata?.role === 'admin';
+  const isAdmin = user?.email === 'nicholas@laederconsulting.com';
 
   useEffect(() => {
     // Get initial session
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session:', session?.user?.email || 'No session');
-      console.log('Auth change - session state:', {
-        hasSession: !!session,
-        userEmail: session?.user?.email || 'none'
-      });
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -43,6 +39,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Force page refresh to update middleware session
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          window.location.reload();
+        }
       }
     );
 
@@ -71,6 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     const { error } = await supabaseClient.auth.signOut();
+    if (!error) {
+      // Force reload to clear all state
+      window.location.href = '/login';
+    }
     return { error };
   };
 

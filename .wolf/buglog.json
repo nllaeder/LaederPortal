@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "bugs": [
+    {
+      "id": "bug-001",
+      "timestamp": "2026-04-05T22:11:19.968Z",
+      "error_message": "Wrong reference: reference should be title",
+      "file": "src/app/api/sync/wave/route.ts",
+      "root_cause": "Used \"reference\" instead of \"title\"",
+      "fix": "Changed reference → title",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T22:11:19.968Z"
+    },
+    {
+      "id": "bug-002",
+      "timestamp": "2026-04-05T22:15:52.241Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/middleware.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T22:15:52.241Z"
+    },
+    {
+      "id": "bug-003",
+      "timestamp": "2026-04-05T22:23:51.133Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/middleware.ts",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 5→4 lines (5 removed) | Also: if (!isAdmin) {; console.log('Access denied to admin route, redirec",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-05T22:26:24.893Z"
+    },
+    {
+      "id": "bug-004",
+      "timestamp": "2026-04-05T22:26:09.749Z",
+      "error_message": "Missing await",
+      "file": "src/app/api/debug/route.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T22:26:09.749Z"
+    },
+    {
+      "id": "bug-005",
+      "timestamp": "2026-04-05T22:29:41.858Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/app/login/page.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T22:29:41.858Z"
+    },
+    {
+      "id": "bug-006",
+      "timestamp": "2026-04-05T22:36:10.261Z",
+      "error_message": "Missing error handling in function",
+      "file": "src/app/auth/callback/route.ts",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T22:36:10.261Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-04-05T22:36:31.174Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/app/login/page.tsx",
+      "root_cause": "16 lines replaced/restructured",
+      "fix": "Rewrote 26→7 lines (16 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T22:36:31.174Z"
+    }
+  ]
+}

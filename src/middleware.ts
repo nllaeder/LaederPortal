@@ -39,85 +39,49 @@ export async function middleware(req: NextRequest) {
     }
   );
 
-  // Refresh session if expired
   const { data: { session }, error } = await supabase.auth.getSession();
 
-  console.log('Middleware session check:', {
+  console.log('Middleware auth check:', {
     path: req.nextUrl.pathname,
     hasSession: !!session,
     userEmail: session?.user?.email || 'none',
     error: error?.message || 'none'
   });
 
-  // Protect dashboard routes
-  if (req.nextUrl.pathname.startsWith('/dashboard')) {
-    // Check if this might be an OAuth callback by looking for auth-related fragments in the referrer
-    const referrer = req.headers.get('referer');
-    const isLikelyOAuthCallback = referrer?.includes('/login') &&
-      (req.headers.get('sec-fetch-dest') === 'document' || req.headers.get('cache-control')?.includes('no-cache'));
-
+  // Protect authenticated routes
+  if (req.nextUrl.pathname.startsWith('/admin') || req.nextUrl.pathname.startsWith('/dashboard')) {
     if (!session) {
-      if (isLikelyOAuthCallback) {
-        console.log('Likely OAuth callback, allowing dashboard access temporarily');
-        // For OAuth callbacks, let the client-side handle the redirect
-        return response;
-      } else {
-        console.log('No session found, redirecting to login');
-        return NextResponse.redirect(new URL('/login', req.url));
-      }
-    }
-  }
-
-  // Protect admin routes (separate handling)
-  if (req.nextUrl.pathname.startsWith('/admin')) {
-    if (!session) {
-      console.log('No session found for admin route, redirecting to login');
+      console.log('No session, redirecting to login');
       return NextResponse.redirect(new URL('/login', req.url));
     }
-  }
 
-  // Admin-only routes
-  if (req.nextUrl.pathname.startsWith('/admin')) {
-    const user = session?.user;
-    const isAdmin = user?.email === 'nicholas@laederconsulting.com';
-
-    console.log('Admin check:', {
-      path: req.nextUrl.pathname,
-      userEmail: user?.email || 'none',
-      isAdmin,
-      expectedEmail: 'nicholas@laederconsulting.com'
-    });
-
-    if (!isAdmin) {
-      console.log('Access denied to admin route, redirecting to dashboard');
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+    // Admin route protection
+    if (req.nextUrl.pathname.startsWith('/admin')) {
+      const isAdmin = session.user?.email === 'nicholas@laederconsulting.com';
+      if (!isAdmin) {
+        console.log('Non-admin accessing admin route, redirecting to dashboard');
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
     }
   }
 
   // Redirect authenticated users away from login
   if (req.nextUrl.pathname === '/login' && session) {
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+    const isAdmin = session.user?.email === 'nicholas@laederconsulting.com';
+    const redirectTo = isAdmin ? '/admin' : '/dashboard';
+    console.log('Authenticated user on login, redirecting to:', redirectTo);
+    return NextResponse.redirect(new URL(redirectTo, req.url));
   }
 
-  // Redirect root to admin/dashboard if authenticated, otherwise to login
+  // Root path redirect
   if (req.nextUrl.pathname === '/') {
     if (session) {
-      const user = session.user;
-      const isAdmin = user?.email === 'nicholas@laederconsulting.com';
-
-      console.log('Root path redirect:', {
-        userEmail: user?.email || 'none',
-        isAdmin,
-        expectedEmail: 'nicholas@laederconsulting.com',
-        redirectTo: isAdmin ? '/admin' : '/dashboard'
-      });
-
-      if (isAdmin) {
-        return NextResponse.redirect(new URL('/admin', req.url));
-      } else {
-        return NextResponse.redirect(new URL('/dashboard', req.url));
-      }
+      const isAdmin = session.user?.email === 'nicholas@laederconsulting.com';
+      const redirectTo = isAdmin ? '/admin' : '/dashboard';
+      console.log('Root path redirect for authenticated user:', redirectTo);
+      return NextResponse.redirect(new URL(redirectTo, req.url));
     } else {
+      console.log('Unauthenticated user on root, redirecting to login');
       return NextResponse.redirect(new URL('/login', req.url));
     }
   }

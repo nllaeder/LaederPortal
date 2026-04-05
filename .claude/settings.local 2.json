@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node test-provision.cjs)",
+      "Bash(npx ts-node test-provision.ts)",
+      "Bash(npm run dev)",
+      "Bash(curl -s http://localhost:3000/api/provision -X POST)",
+      "Bash(node test-drive-direct.js)",
+      "Bash(npm ls googleapis)",
+      "Bash(npx ts-node --esm test-provision.ts)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

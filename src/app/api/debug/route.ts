@@ -16,6 +16,12 @@ export async function GET() {
                     get(name: string) {
                         return cookieStore.get(name)?.value;
                     },
+                    set(name: string, value: string, options: any) {
+                        // No-op for GET request
+                    },
+                    remove(name: string, options: any) {
+                        // No-op for GET request
+                    },
                 },
             }
         );
