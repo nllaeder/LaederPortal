@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabaseClient.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/`,
       },
     });
     return { error };
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/`,
       },
     });
     return { error };
