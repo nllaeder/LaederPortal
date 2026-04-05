@@ -71,7 +71,7 @@ export async function middleware(req: NextRequest) {
   // Admin-only routes
   if (req.nextUrl.pathname.startsWith('/admin')) {
     const user = session?.user;
-    const isAdmin = user?.user_metadata?.role === 'admin';
+    const isAdmin = user?.email === 'nicholas@laederconsulting.com';
 
     if (!isAdmin) {
       return NextResponse.redirect(new URL('/dashboard', req.url));
