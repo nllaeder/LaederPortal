@@ -33,7 +33,14 @@ export async function middleware(req: NextRequest) {
   );
 
   // Refresh session to get the latest session
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session }, error } = await supabase.auth.getSession();
+
+  console.log('Middleware session check:', {
+    path: req.nextUrl.pathname,
+    hasSession: !!session,
+    userEmail: session?.user?.email || 'none',
+    error: error?.message || 'none'
+  });
 
   // Protected routes that require authentication
   const protectedRoutes = ['/admin', '/dashboard', '/project'];
