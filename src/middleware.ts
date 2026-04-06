@@ -3,7 +3,12 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
-  let response = NextResponse.next({
+  // Allow auth callback route to process without middleware interference
+  if (req.nextUrl.pathname === '/auth/callback') {
+    return NextResponse.next();
+  }
+
+  let supabaseResponse = NextResponse.next({
     request: {
       headers: req.headers,
     },
@@ -18,40 +23,24 @@ export async function middleware(req: NextRequest) {
           return req.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
-          req.cookies.set({ name, value, ...options });
-          response = NextResponse.next({
-            request: {
-              headers: req.headers,
-            },
-          });
-          response.cookies.set({ name, value, ...options });
+          supabaseResponse.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: any) {
-          req.cookies.set({ name, value: '', ...options });
-          response = NextResponse.next({
-            request: {
-              headers: req.headers,
-            },
-          });
-          response.cookies.set({ name, value: '', ...options });
+          supabaseResponse.cookies.set({ name, value: '', ...options });
         },
       },
     }
   );
 
-  const { data: { session }, error } = await supabase.auth.getSession();
+  // Refresh session to get the latest session
+  const { data: { session } } = await supabase.auth.getSession();
 
-  console.log('Middleware auth check:', {
-    path: req.nextUrl.pathname,
-    hasSession: !!session,
-    userEmail: session?.user?.email || 'none',
-    error: error?.message || 'none'
-  });
+  // Protected routes that require authentication
+  const protectedRoutes = ['/admin', '/dashboard', '/project'];
+  const isProtectedRoute = protectedRoutes.some(route => req.nextUrl.pathname.startsWith(route));
 
-  // Protect authenticated routes
-  if (req.nextUrl.pathname.startsWith('/admin') || req.nextUrl.pathname.startsWith('/dashboard')) {
+  if (isProtectedRoute) {
     if (!session) {
-      console.log('No session, redirecting to login');
       return NextResponse.redirect(new URL('/login', req.url));
     }
 
@@ -59,7 +48,6 @@ export async function middleware(req: NextRequest) {
     if (req.nextUrl.pathname.startsWith('/admin')) {
       const isAdmin = session.user?.email === 'nicholas@laederconsulting.com';
       if (!isAdmin) {
-        console.log('Non-admin accessing admin route, redirecting to dashboard');
         return NextResponse.redirect(new URL('/dashboard', req.url));
       }
     }
@@ -69,7 +57,6 @@ export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname === '/login' && session) {
     const isAdmin = session.user?.email === 'nicholas@laederconsulting.com';
     const redirectTo = isAdmin ? '/admin' : '/dashboard';
-    console.log('Authenticated user on login, redirecting to:', redirectTo);
     return NextResponse.redirect(new URL(redirectTo, req.url));
   }
 
@@ -78,15 +65,13 @@ export async function middleware(req: NextRequest) {
     if (session) {
       const isAdmin = session.user?.email === 'nicholas@laederconsulting.com';
       const redirectTo = isAdmin ? '/admin' : '/dashboard';
-      console.log('Root path redirect for authenticated user:', redirectTo);
       return NextResponse.redirect(new URL(redirectTo, req.url));
     } else {
-      console.log('Unauthenticated user on root, redirecting to login');
       return NextResponse.redirect(new URL('/login', req.url));
     }
   }
 
-  return response;
+  return supabaseResponse;
 }
 
 export const config = {
@@ -95,5 +80,7 @@ export const config = {
     '/login',
     '/dashboard/:path*',
     '/admin/:path*',
+    '/project/:path*',
+    '/auth/callback',
   ],
 };

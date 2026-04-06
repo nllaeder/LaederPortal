@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabaseClient } from '@/lib/supabase-client';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
@@ -20,41 +21,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const isAdmin = user?.email === 'nicholas@laederconsulting.com';
 
   useEffect(() => {
-    // Get initial session
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session?.user?.email || 'No session');
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    let mounted = true;
 
-    // Listen for auth changes
+    const getSession = async () => {
+      try {
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error getting session:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    getSession();
+
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email || 'No session');
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
 
-        // Force page refresh to update middleware session
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-          window.location.reload();
+          // Handle redirects without page reloads
+          if (event === 'SIGNED_IN') {
+            const redirectTo = session?.user?.email === 'nicholas@laederconsulting.com' ? '/admin' : '/dashboard';
+            router.push(redirectTo);
+          } else if (event === 'SIGNED_OUT') {
+            router.push('/login');
+          }
         }
       }
     );
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   const signInWithEmail = async (email: string) => {
     const { error } = await supabaseClient.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
     return { error };
@@ -64,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
     return { error };
@@ -72,10 +92,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     const { error } = await supabaseClient.auth.signOut();
-    if (!error) {
-      // Force reload to clear all state
-      window.location.href = '/login';
-    }
     return { error };
   };
 
