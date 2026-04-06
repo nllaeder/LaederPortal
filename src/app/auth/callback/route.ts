@@ -49,11 +49,11 @@ export async function GET(request: NextRequest) {
 
       console.log('Redirecting authenticated user to:', redirectTo);
 
-      // Now create response with proper cookie handling
+      // Create response object first
       const response = NextResponse.redirect(`${origin}${redirectTo}`);
 
-      // Set up Supabase client again to ensure cookies are properly set on response
-      const supabaseResponse = createServerClient(
+      // Set up Supabase client with response cookie handlers to ensure proper session persistence
+      const supabaseWithCookies = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
@@ -62,17 +62,36 @@ export async function GET(request: NextRequest) {
               return request.cookies.get(name)?.value;
             },
             set(name: string, value: string, options: any) {
-              response.cookies.set({ name, value, ...options });
+              console.log('Setting session cookie:', name, '(length:', value.length, ')');
+              response.cookies.set({
+                name,
+                value,
+                ...options,
+                httpOnly: true,
+                secure: true,
+                sameSite: 'lax',
+                path: '/'
+              });
             },
             remove(name: string, options: any) {
-              response.cookies.set({ name, value: '', ...options });
+              response.cookies.set({
+                name,
+                value: '',
+                ...options,
+                expires: new Date(0),
+                path: '/'
+              });
             },
           },
         }
       );
 
-      // Trigger session refresh to ensure cookies are set
-      await supabaseResponse.auth.getSession();
+      // Ensure session is fully established by calling getSession
+      const { data: { session: verifySession } } = await supabaseWithCookies.auth.getSession();
+      console.log('Session verification after cookie setup:', {
+        hasSession: !!verifySession,
+        userEmail: verifySession?.user?.email
+      });
 
       return response;
     }
